@@ -1,20 +1,21 @@
 """
-This stage parallelize cleaning of split emissions files with emissions events only.
+This stage parallelizes cleaning of split emissions files with emissions events only.
 
 Previous stage: emissionsBreak
 Next stage: emissionsDivideChangeH (parallelized)
 """
 #==============================
 # Parallelization: emissionsClean
+# Parallelization across emissions files, i.e. 986 files (IdF_100pct case).
 #
 # Run:
 # python apply_multi__emissionsClean.py
 #==============================
 # Default arguments are loaded from attributes.py
-#     [test_add] - indicates if run in test directory; default ""; if (="_test"), test directory is used
-#     [input_dir_local] & [output_dir_local] - main input & output local directories
-#     [fp_info_f] - csv file with information on files
-#     [nb_proc] - number of processes, default = 80% of the number of cores
+#    [test_add] - indicates if run in test directory; default ""; if (="_test"), test directory is used
+#    [input_dir_local] & [output_dir_local] - main input & output local directories
+#    [fp_info_f] - csv file with information on files
+#    [nb_proc] - number of processes, default = 80% of the number of cores
 #==============================
 
 import pandas as pd

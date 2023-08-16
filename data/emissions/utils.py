@@ -126,3 +126,93 @@ def emissionsDivideFolderH(h, file_id_start, file_id_end, input_dir, fn_base = "
         fp_in = "%s/%s%d.xml.gz" %(input_dir,fn_base,file_id)
         fp_out = "%s/%s/%s%d.xml.gz" %(input_dir,dir_h,fn_base,file_id)
         os.rename(fp_in,fp_out)
+
+
+#==============================
+# F: Create dictionary from emission file,
+#    calculate emissions per type {cold, warm, pollutant} per link.
+#==============================
+##################################################################################
+# Study: Emissions preprocessing
+# Purpose: Read emissions events and save raw data per hour
+# Author: Marjolaine Lannes
+# Creation date: July 4, 2023
+# Note: Save one emissions file per hour
+# param pour config : car_fleet_is_average (average_fleet=True)
+# modules : time, gzip, xml.etree.ElementTree
+##################################################################################
+# Emissions events reader
+def emissions_events_reader(fp_emissions, average_fleet=True):
+    import gzip
+    import xml.etree.ElementTree as ET
+    with gzip.open(fp_emissions, 'r') as f:
+        tree = ET.iterparse(f)
+        _, root = next(tree)
+        try:
+            # print(_, root)
+            for event,elem in tree:
+                attributes = elem.attrib
+                if "type" in attributes.keys() :
+                    attributes['type'] = attributes['type'][0:4] # ('cold' or 'warm')
+                    if average_fleet:
+                        attributes.pop('vehicleId')
+                    yield attributes
+                root.clear()
+        except Exception as e:
+            print(F"XML ERROR for {fp_emissions=}: {e=}, {type(e)=}")
+
+# Summation of emissions by type for each link per hour.
+def emissionsSumH(h, input_dir, output_dir, pollutants, average_fleet):
+    import gzip
+    import os
+    import pickle
+    import math
+    from timeit import default_timer as timer
+    import datetime
+
+    start = timer()
+    input_files = os.listdir(input_dir)
+
+    for i, emissions_f in enumerate(input_files):
+        # Initialize data
+        output_t = "%s/emissions_h%d.pkl.gz" %(output_dir,h)
+        if os.path.exists(output_t):
+            with gzip.open(output_t, 'rb') as input_f:
+                outputs = pickle.load(input_f)
+        else:
+            outputs = {}
+
+        fp_emissions = "%s/%s" %(input_dir,emissions_f)
+        events = emissions_events_reader(fp_emissions, average_fleet)
+        for event in events:
+            link = event['linkId']
+            event_type = event['type']
+            # If the link is already in the dictionary, just add the information
+            if link in outputs.keys():
+                if event_type in outputs[link].keys():
+                    for pollutant in pollutants:
+                        if pollutant in event.keys():
+                            outputs[link][event_type][pollutant] = math.fsum(
+                                [outputs[link][event_type][pollutant], float(event[pollutant])])
+                else:
+                    outputs[link][event_type] = {}
+                    for pollutant in pollutants:
+                        if pollutant in event.keys():
+                            outputs[link][event_type][pollutant] = float(event[pollutant])
+                        else:
+                            outputs[link][event_type][pollutant] = 0.0
+            # Else, initialize a new link dict
+            else:
+                outputs[link] = {event_type: {}}
+                for pollutant in pollutants:  # for detailed car fleet, add "car_type" (with subsegment) here
+                    if pollutant in event.keys():
+                        outputs[link][event_type][pollutant] = float(event[pollutant])
+                    else:
+                        outputs[link][event_type][pollutant] = 0.0
+
+        # Save last hour dictionary
+        with gzip.open(output_t, 'wb') as output_f:
+            pickle.dump(outputs, output_f)
+        end = timer()
+        k = 100 * i / len(input_files)
+        print("hour ", h, ", ", k, "% in", datetime.timedelta(seconds=end - start), " sec.")

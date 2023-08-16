@@ -61,7 +61,23 @@ if not os.path.exists(dir_emissionsClean):
 #==============================
 # csv file with information on input files
 fp_info_fhh = "%s/%s/%s" % (input_dir_local,work_dir,"info_fhh.csv")
+fp_info_fh = "%s/%s/%s" % (input_dir_local,work_dir,"info_fh.csv")
 
+
+# Stage 4: SumF
+#==============================
+# Path for output files
+dir_emissionsSum = "%s/%s/%s" % (output_dir_local,work_dir,"emissions_sum")
+
+average_fleet = True
+pollutants = ['CO', 'CO2_TOTAL', 'HC', 'NMHC', 'NOx', 'NO2', 'PM', 'PM_non_exhaust',
+              'SO2', 'PM2_5', 'PM2_5_non_exhaust', 'BC_exhaust', 'BC_non_exhaust',
+              'Benzene', 'PN', 'CH4', 'NH3']
+
+# Create output [dir_emissionsSumF] directory if doesn't exist
+if not os.path.exists(dir_emissionsSum):
+    os.makedirs(dir_emissionsSum)
+    print("The output directory is created: %s" % dir_emissionsSum)
 
 
 # (Default) Number of CPU = 80% of the number of cores

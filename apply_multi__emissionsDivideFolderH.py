@@ -2,10 +2,11 @@
 This stage moves split emissions files to the folder of corresponding hour.
 
 Previous stage: emissionsDivideChangeH (parallelized)
-Next stage: emissionsCalculateH (parallelized per hour)
+Next stage: emissionsSumH (parallelized per hour)
 """
 #==============================
 # Parallelization: emissionsDivideFolderH
+# Parallelization across hours, i.e. 27 hours.
 #
 # Run:
 # python apply_multi__emissionsDivideFolderH.py
@@ -53,6 +54,8 @@ if __name__ == '__main__':
 
     df['file_id_start'] = df['file_id_start'].astype('int')
     df['file_id_end'] = df['file_id_end'].astype('int')
+
+    df.to_csv(attr.fp_info_fh)
 
     rows = [row for index, row in df.iterrows()]
     print("%d files for multiprocessing." % len(df))

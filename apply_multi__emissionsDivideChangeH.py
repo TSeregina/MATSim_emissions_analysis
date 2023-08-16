@@ -9,6 +9,7 @@ Next stage: emissionsDivideFolderH (parallelized)
 """
 #==============================
 # Parallelization: emissionsDivideChangeH
+# Parallelization across files with hour change, i.e. ~26 files.
 #
 # Run:
 # python apply_multi__emissionsDivideChangeH.py
