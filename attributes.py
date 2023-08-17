@@ -64,7 +64,7 @@ fp_info_fhh = "%s/%s/%s" % (input_dir_local,work_dir,"info_fhh.csv")
 fp_info_fh = "%s/%s/%s" % (input_dir_local,work_dir,"info_fh.csv")
 
 
-# Stage 4: SumF
+# Stage 4: SumH
 #==============================
 # Path for output files
 dir_emissionsSum = "%s/%s/%s" % (output_dir_local,work_dir,"emissions_sum")
